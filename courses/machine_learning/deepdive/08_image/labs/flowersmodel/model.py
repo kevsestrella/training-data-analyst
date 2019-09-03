@@ -98,12 +98,18 @@ def read_and_preprocess_with_augment(image_bytes, label = None):
     
 def read_and_preprocess(image_bytes, label = None, augment = False):
     # Decode the image, end up with pixel values that are in the -1, 1 range    
-    image = #TODO: decode contents into JPEG
-    image = #TODO: convert JPEG tensor to floats between 0 and 1
+    image = tf.image.decode_jpeg(contents = image_bytes, channels = NUM_CHANNELS)#TODO: decode contents into JPEG
+    image = tf.image.convert_image_dtype(image = image, dtype = tf.float32)#TODO: convert JPEG tensor to floats between 0 and 1
     image = tf.expand_dims(input = image, axis = 0) # resize_bilinear needs batches
     
     if augment:
         #TODO: Add image augmentation functions
+        image = tf.image.resize_bilinear(images = image, size = [HEIGHT + 10, WIDTH + 10], align_corners = False)
+        image = tf.squeeze(input = image, axis = 0)
+        image = tf.random_crop(value = image, size = [HEIGHT, WIDTH, NUM_CHANNELS])
+        image = tf.image.random_flip_left_right(image = image)
+        image = tf.image.random_brightness(image = image, max_delta = 63.0 / 255.0 )
+        image = tf.image.random_contrast(image = image, lower = 0.2, upper = 1.8)
     else:
         image = tf.image.resize_bilinear(images = image, size = [HEIGHT, WIDTH], align_corners = False)
         image = tf.squeeze(input = image, axis = 0) # remove batch dimension
@@ -131,9 +137,9 @@ def make_input_fn(csv_of_filenames, batch_size, mode, augment=False):
         dataset = tf.data.TextLineDataset(filenames = csv_of_filenames).map(map_func = decode_csv)
         
         if augment:
-            dataset = #TODO: map read_and_preprocess_with_augment
+            dataset = dataset.map(map_func = read_and_preprocess_with_augment)#TODO: map read_and_preprocess_with_augment
         else:
-            dataset = #TODO: map read_and_preprocess
+            dataset = dataset.map(map_func = read_and_preprocess)#TODO: map read_and_preprocess
 
         if mode == tf.estimator.ModeKeys.TRAIN:
             num_epochs = None # indefinitely
