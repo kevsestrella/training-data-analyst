@@ -33,11 +33,23 @@ def linear_model(img, mode, hparams):
 
 def dnn_model(img, mode, hparams):
     # TODO: Implement DNN model with three hiddenlayers
-    pass
+    X = tf.reshape(tensor = img, shape = [-1, HEIGHT * WIDTH])
+    h1 = tf.layers.dense(inputs = X, units = 300, activation = tf.nn.relu)
+    h2 = tf.layers.dense(inputs = h1, units = 100, activation = tf.nn.relu)
+    h3 = tf.layers.dense(inputs = h2, units = 30, activation = tf.nn.relu)
+    ylogits = tf.layers.dense(inputs = h3, units = NCLASSES, activation = None)
+    return ylogits, NCLASSES
+    
 
 def dnn_dropout_model(img, mode, hparams):
     # TODO: Implement DNN model and apply dropout to the last hidden layer
-    pass
+    X = tf.reshape(tensor = img, shape = [-1, HEIGHT * WIDTH])
+    h1 = tf.layers.dense(inputs = X, units = 300, activation = tf.nn.relu)
+    h2 = tf.layers.dense(inputs = h1, units = 100, activation = tf.nn.relu)
+    h3 = tf.layers.dense(inputs = h2, units = 30, activation = tf.nn.relu)
+    h3d = tf.layers.dropout(inputs = h3, rate = dprob, training = (mode == tf. tf.estimator.ModeKeys.TRAIN))
+    ylogits = tf.layers.dense(inputs = h3d, units = NCLASSES, activation = None)
+    return ylogits, NCLASSES
 
 def cnn_model(img, mode, hparams):
     ksize1 = hparams.get('ksize1', 5)
