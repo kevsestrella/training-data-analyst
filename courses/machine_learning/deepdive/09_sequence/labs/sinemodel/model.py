@@ -39,17 +39,34 @@ def init(hparams):
 def linear_model(features, mode, params):
     X = features[TIMESERIES_COL]
     #TODO: finish linear model
-    pass
+    predictions = tf.layers.dense(X, 1, activation = None)
+    return predictions
 
 def dnn_model(features, mode, params):
-  X = features[TIMESERIES_COL]
-  #TODO: finish DNN model
-  pass
+    X = features[TIMESERIES_COL]
+    #TODO: finish DNN model
+    h1 = tf.layers.dense(X, 10, activation = tf.nn.relu)
+    h2 = tf.layers.dense(h1, 3, activation  = tf.nn.relu)
+    predictions = tf.layers.dense(h2, 1, activation = None)
+    return predictions
 
 def cnn_model(features, mode, params):
-  X = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1]) # as a 1D "sequence" with only one time-series observation (height)
-  #TODO: finish CNN model
-  pass
+    X = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1]) # as a 1D "sequence" with only one time-series observation (height)
+    #TODO: finish CNN model
+    c1 = tf.layers.conv1d(X, filters = N_INPUTS // 2,
+                         kernel_size = 3, strides = 1,
+                         padding = 'same', activation = tf.nn.relu)
+    p1 = tf.layers.max_pooling1d(c1, pool_size = 2, strides = 2)
+    c2 = tf.layers.conv1d(p1, filters = N_INPUTS //2,
+                         kernel_size = 3, strides = 1,
+                         padding = 'same', activation  = tf.nn.relu)
+    p2 = tf.layers.max_pooling1d(c2, pool_size = 2, strides = 2)
+    
+    outlen = p2.shape[1] * p2.shape[2]
+    c2flat = tf.reshape(p2, [-1, outlen])
+    h1 = tf.layers.dense(c2flat, 3, activation = tf.nn.relu)
+    predictions = tf.layers.dense(h1, 1, activation = None)
+    return predictions
 
 def rnn_model(features, mode, params):
   # 1. dynamic_rnn needs 3D shape: [BATCH_SIZE, N_INPUTS, 1]
