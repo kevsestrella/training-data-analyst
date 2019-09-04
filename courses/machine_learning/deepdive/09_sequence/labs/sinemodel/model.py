@@ -81,9 +81,17 @@ def rnn_model(features, mode, params):
 
 # 2-layer RNN
 def rnn2_model(features, mode, params):
-  x = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1])
-  #TODO: finish 2-layer rnn model
-  pass
+    x = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1])
+    #TODO: finish 2-layer rnn model
+    
+    cell1 = tf.nn.rnn_cell.GRUCell(N_INPUTS * 2)
+    cell2 = tf.nn.rnn_cell.GRUCell(N_INPUTS // 2)
+    cells = tf.nn.rnn_cell.MultiRNNCell([cell1, cell2]) 
+    outputs, state = tf.nn.dynamic_rnn(cells, x, dtype = tf.float32)
+    
+    h1 = tf.layers.dense(state[1], cells.output_size // 2, activation = tf.nn.relu)
+    predictions = tf.layers.dense(h1, 1, activation = None)
+    return predictions
 
 # create N-1 predictions
 def rnnN_model(features, mode, params):
