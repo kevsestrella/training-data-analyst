@@ -69,10 +69,15 @@ def cnn_model(features, mode, params):
     return predictions
 
 def rnn_model(features, mode, params):
-  # 1. dynamic_rnn needs 3D shape: [BATCH_SIZE, N_INPUTS, 1]
-  x = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1])
-  #TODO: finish rnn model
-  pass
+    CELL_SIZE = N_INPUTS // 3
+    # 1. dynamic_rnn needs 3D shape: [BATCH_SIZE, N_INPUTS, 1]
+    x = tf.reshape(features[TIMESERIES_COL], [-1, N_INPUTS, 1])
+    
+    cell = tf.nn.rnn_cell.GRUCell(CELL_SIZE)
+    outputs, state = tf.nn.dynamic_rnn(cell, x, dtype = tf.float32)
+    h1 = tf.layers.dense(state, N_INPUTS // 2, activation = tf.nn.relu)
+    predictions = tf.layers.dense(h1, 1 , activation = None)
+    return predictions
 
 # 2-layer RNN
 def rnn2_model(features, mode, params):
